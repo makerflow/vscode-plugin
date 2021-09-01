@@ -1,0 +1,124 @@
+{
+	"name": "makerflow",
+	"displayName": "Makerflow",
+	"publisher": "makerflow",
+	"description": "Makerflow is deep work and collaboration assistant for developers. Signup for your FREE account at https://makerflow.co",
+	"version": "0.0.1",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/makerflow/vscode-plugin.git"
+	},
+	"icon": "icon.png",
+	"engines": {
+		"vscode": "^1.55.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./out/main.js",
+	"contributes": {
+		"configuration": [
+			{
+				"title": "Makerflow",
+				"properties": {
+					"makerflow.doNotAskForApiToken": {
+						"type": "boolean",
+						"default": false,
+						"scope": "application",
+						"markdownDescription": "Set this to true (or check the box) if you do not want to be asked for the API token again."
+					},
+					"makerflow.doNotShowFlowModeNotifications": {
+						"type": "boolean",
+						"default": false,
+						"scope": "application",
+						"markdownDescription": "Set this to true (or check the box) if you do not want to be notified when flow mode begins or ends."
+					},
+					"makerflow.showStatus": {
+						"type": "boolean",
+						"default": "true",
+						"scope": "application",
+						"markdownDescription": "Show status about Flow Mode or breaks in status bar?"
+					},
+					"makerflow.showTasksTodoStatusItem": {
+						"type": "boolean",
+						"default": "true",
+						"scope": "application",
+						"markdownDescription": "Show information about incoming notifications?"
+					},
+					"makerflow.showCalendarStatusItem": {
+						"type": "boolean",
+						"default": "true",
+						"scope": "application",
+						"markdownDescription": "Show upcoming or ongoing calendar events"
+					}
+				}
+			}
+		],
+		"commands": [
+			{
+				"command": "makerflow.toggleFlowMode",
+				"title": "Makerflow: Toggle Flow Mode"
+			},
+			{
+				"command": "makerflow.startBreak",
+				"title": "Makerflow: Start/go on a break"
+			},
+			{
+				"command": "makerflow.stopBreak",
+				"title": "Makerflow: Stop current break"
+			},
+			{
+				"command": "makerflow.startLunchBreak",
+				"title": "Makerflow: Start a lunch break"
+			},
+			{
+				"command": "makerflow.startCoffeeBreak",
+				"title": "Makerflow: Start a coffee break"
+			},
+			{
+				"command": "makerflow.startTeaBreak",
+				"title": "Makerflow: Start break to drink some tea"
+			},
+			{
+				"command": "makerflow.startBeverageBreak",
+				"title": "Makerflow: Start a beverage break"
+			},
+			{
+				"command": "makerflow.startWalkBreak",
+				"title": "Makerflow: Start break to go on a walk"
+			}
+		]
+	},
+	"scripts": {
+		"lint": "eslint .",
+		"pretest": "yarn run lint",
+		"test": "node ./test/runTest.js",
+		"vscode:prepublish": "npm run -S esbuild-base -- --minify",
+		"esbuild-base": "esbuild ./extension.js --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+		"esbuild": "npm run -S esbuild-base -- --sourcemap",
+		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
+		"test-compile": "tsc -p ./"
+	},
+	"dependencies": {
+		"axios": "^0.21.1",
+		"date-fns": "^2.23.0",
+		"date-fns-tz": "^1.1.4",
+		"lodash": "^4.17.21",
+		"pluralize": "^8.0.0"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.3",
+		"@types/mocha": "^8.0.4",
+		"@types/node": "^12.11.7",
+		"@types/vscode": "^1.55.0",
+		"esbuild": "^0.12.1",
+		"eslint": "^7.19.0",
+		"glob": "^7.1.6",
+		"mocha": "^8.2.1",
+		"typescript": "^4.1.3",
+		"vscode-test": "^1.5.0"
+	}
+}
