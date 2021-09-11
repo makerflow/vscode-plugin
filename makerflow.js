@@ -6,8 +6,8 @@ const formatDistanceToNowStrict = require('date-fns/formatDistanceToNowStrict');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const todoUtils = require('./todo-utils');
+const eventUtils = require('./event-utils');
 const pluralize = require('pluralize');
-const { isSameMinute, isBefore, isAfter, parseJSON } = require('date-fns');
 const { groupBy } = require('lodash');
 
 let context = null;
@@ -119,7 +119,7 @@ const getOngoingBreakMode = async function() {
     }
     const newLocal = sanitizeCliOutput(stdout, true);
     const response = JSON.parse(newLocal);
-    return response != null && response.hasOwnProperty("data") ? response.data : null
+    return response != null && response ? response : null
 }
 
 const getAndProcessOngoingBreak = function() {
@@ -131,7 +131,7 @@ const getAndProcessOngoingBreak = function() {
             }
             behaveAsInBreakMode(breakMode);
         } else {
-            if (getSavedFlowMode() === null) return;
+            if (getSavedBreakMode() === null) return;
             behaveAsNOTInBreakMode();
         }
     })
@@ -224,7 +224,7 @@ const startBreak = async function(reason) {
                 return;
             } else {
                 const response = JSON.parse(sanitizeCliOutput(stdout, true));
-                behaveAsInBreakMode(response.data);
+                behaveAsInBreakMode(response);
             }
         });
     }
@@ -339,13 +339,13 @@ const fetchCalendarEventsAndProcess = async function() {
     if (!apiTokenAvailable) return;
     const events = await fetchCalendarEvents();
     if (events.length === 0) {
-        calendarStatusItem.text = "No upcoming events"
+        calendarStatusItem.text = "No upcoming calendar events"
         context.globalState.update('calendarEvents', []);
         return;
     }
     context.globalState.update('calendarEvents', events);
-    const groups = groupBy(events, calendarEventOngoingUpcoming);
-    let text = "Events - ";
+    const groups = groupBy(events, eventUtils.calendarEventOngoingUpcoming);
+    let text = "Calendar - ";
     let requireSeparator = false;
     Object.keys(groups).forEach(function(key) {
         if (requireSeparator) text += " | ";
@@ -354,25 +354,6 @@ const fetchCalendarEventsAndProcess = async function() {
     });
     calendarStatusItem.text = text;
 }
-
-const calendarEventOngoingUpcoming = function (calendarEvent) {
-    const now = new Date(new Date().toUTCString());
-    let start = parseJSON(calendarEvent.start);
-    let end = parseJSON(calendarEvent.end);
-    if (isSameMinute(start, now)) {
-      return "Ongoing";
-    }
-    if (isBefore(start, now)) {
-      if (isAfter(end, now)) {
-        return "Ongoing";
-      } else {
-        return "Ended";
-      }
-    }
-    if (isAfter(start, now)) {
-      return "Upcoming";
-    }
-  }
 
 const listTasks = async function() {
     const tasks = context.globalState.get('todos');
@@ -384,6 +365,17 @@ const listTasks = async function() {
     });
     if (!item) return;
     todoUtils.executeAction(item.todo, markAsDone);
+}
+
+const listEvents = async function() {
+    const events = context.globalState.get('calendarEvents');
+    if (events.length === 0) return;
+    const quickPickItems = events.map(eventUtils.createQuickPickItem);
+    const item = await vscode.window.showQuickPick(quickPickItems, {
+        placeHolder: "Select an event"
+    });
+    if (!item) return;
+    eventUtils.executeAction(item.event);
 }
 
 const markAsDone = async function(todo) {
@@ -440,7 +432,8 @@ module.exports = {
     fetchTasksAndProcess,
     fetchCalendarEventsAndProcess,
     listTasks,
-    recordProductiveActivity
+    recordProductiveActivity,
+    listEvents
 }
 
 /**

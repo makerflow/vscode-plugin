@@ -65,8 +65,12 @@ async function activate(context) {
 		tasksStatusItem.show();
 	}
 	makerflow.setTasksStatusBarItem(tasksStatusItem);
+
+	const listEventsCommandId = "makerflow.listEvents";
+	vscode.commands.registerCommand(listEventsCommandId, makerflow.listEvents);
 	const calendarStatusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-	calendarStatusItem.text = "Loading events..."
+	calendarStatusItem.command = listEventsCommandId;
+	calendarStatusItem.text = "Loading calendar..."
 	if (vscode.workspace.getConfiguration('makerflow').showCalendarStatusItem) {
 		calendarStatusItem.show();
 	}

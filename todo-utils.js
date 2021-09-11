@@ -1,6 +1,5 @@
 const utcToZonedTime = require('date-fns-tz/utcToZonedTime');
 const formatDistanceToNowStrict = require('date-fns/formatDistanceToNowStrict');
-const { is } = require('date-fns/locale');
 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const _ = require('lodash');
 const pluralize = require('pluralize')

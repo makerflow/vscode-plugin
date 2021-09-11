@@ -4,6 +4,7 @@
 	"publisher": "makerflow",
 	"description": "Makerflow is deep work and collaboration assistant for developers. Signup for your FREE account at https://makerflow.co",
 	"version": "0.0.1",
+	"preview": true,
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/makerflow/vscode-plugin.git"
