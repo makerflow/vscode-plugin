@@ -25,7 +25,7 @@ const beginFlowMode = async function () {
         behaveAsInFlowMode();
     } else if (apiTokenAvailable) {
         statusBarItem.text = "Flow Mode: Starting..."
-        exec("makerflow start --json", (error, stdout, stderr) => {
+        exec("makerflow start --json --source=vscode", (error, stdout, stderr) => {
             if (error) {
                 console.error(error);
                 statusBarItem.text = "Flow Mode: Off"
@@ -54,7 +54,7 @@ const endFlowMode = async function() {
         behaveAsNOTInFlowMode();
     } else if (apiTokenAvailable) {
         statusBarItem.text = "Flow Mode: Stopping..."
-        const {error, stderr} = await exec("makerflow stop --json")
+        const {error, stderr} = await exec("makerflow stop --json --source=vscode")
         if (error) {
             console.error(error);
             return;
@@ -70,7 +70,7 @@ const endFlowMode = async function() {
 const getOngoingFlowMode = async function() {
     const apiTokenAvailable = await config.isApiTokenAvailable();
     if (!apiTokenAvailable) return null;
-    const {error, stdout, stderr} = await exec("makerflow ongoing --json")
+    const {error, stdout, stderr} = await exec("makerflow ongoing --json --source=vscode")
     if (error) {
         console.error(error);
         return null;
@@ -105,7 +105,7 @@ const getAndProcessOngoingFlow = function() {
 const getOngoingBreakMode = async function() {
     const apiTokenAvailable = await config.isApiTokenAvailable();
     if (!apiTokenAvailable) return null;
-    const {error, stdout, stderr} = await exec("makerflow break ongoing --json")
+    const {error, stdout, stderr} = await exec("makerflow break ongoing --json --source=vscode")
     if (error) {
         console.error(error);
         return null;
@@ -208,7 +208,7 @@ const startBreak = async function(reason) {
         return;
     } else if (apiTokenAvailable) {
         statusBarItem.text = "Starting Break..."
-        exec(`makerflow break start --json${reason ? ' --reason=' + reason : ''}`, (error, stdout, stderr) => {
+        exec(`makerflow break start --json${reason ? ' --reason=' + reason : ''}  --source=vscode`, (error, stdout, stderr) => {
             if (error) {
                 console.error(error);
                 statusBarItem.text = "Error when starting break"
@@ -237,7 +237,7 @@ const stopBreak = async function() {
         return;
     } else if (apiTokenAvailable) {
         statusBarItem.text = "Stopping Break..."
-        exec(`makerflow break stop --json`, (error, stdout, stderr) => {
+        exec(`makerflow break stop --json --source=vscode`, (error, stdout, stderr) => {
             if (error) {
                 console.error(error);
                 statusBarItem.text = "Error when stopping break"
@@ -270,7 +270,7 @@ const clickStatusBar = function() {
 const fetchTasks = async function() {
     const apiTokenAvailable = await config.isApiTokenAvailable();
     if (!apiTokenAvailable) return [];
-    const { error, stdout, stderr } = await exec(`makerflow tasks todo --json`)
+    const { error, stdout, stderr } = await exec(`makerflow tasks todo --json --source=vscode`)
     if (error) {       
     console.error(error);
         return [];
@@ -320,7 +320,7 @@ const fetchTasksAndProcess = async function() {
 const fetchCalendarEvents = async function() {
     const apiTokenAvailable = await config.isApiTokenAvailable();
     if (!apiTokenAvailable) return [];
-    const { error, stdout, stderr } = await exec(`makerflow events list --json`)
+    const { error, stdout, stderr } = await exec(`makerflow events list --json --source=vscode`)
     if (error) {
         console.error(error);
         return [];
@@ -381,7 +381,7 @@ const listEvents = async function() {
 const markAsDone = async function(todo) {
     const apiTokenAvailable = await config.isApiTokenAvailable();
     if (!apiTokenAvailable) return;
-    const { error, stdout, stderr } = await exec(`makerflow todo done ${JSON.stringify(todo)} --json`)
+    const { error, stdout, stderr } = await exec(`makerflow todo done ${JSON.stringify(todo)} --json --source=vscode`)
     if (error) {
         console.error(error);
         return;
