@@ -196,7 +196,8 @@ const setCalendarStatusBarItem = function(providedStatusBarItem) {
 const updateElapsedTimeOnStatusBar = function() {
     let flowMode = getSavedFlowMode()
     let breakMode = getSavedBreakMode();
-    if (flowMode === null && breakMode === null) return;
+    if ((flowMode === null || Object.keys(flowMode).length === 0) 
+        && (breakMode === null || Object.keys(breakMode).length === 0)) return;
     const prefix = flowMode === null ? "On Break: " : "Flow Mode: ";
     statusBarItem.text = prefix + getElapsedTime(flowMode === null ? breakMode : flowMode);
 }
@@ -260,7 +261,8 @@ const stopBreak = async function() {
 }
 
 const clickStatusBar = function() {
-    if (getSavedBreakMode() !== null) {
+    const savedBreakMode = getSavedBreakMode();
+    if (savedBreakMode !== null && Object.keys(savedBreakMode).length > 0) {
         stopBreak();
     } else {
         toggleFlowMode();
