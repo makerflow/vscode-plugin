@@ -3,6 +3,7 @@ const vscode = require('vscode');
 const utcToZonedTime = require('date-fns-tz/utcToZonedTime');
 const zonedTimeToUtc = require('date-fns-tz/zonedTimeToUtc');
 const formatDistanceToNowStrict = require('date-fns/formatDistanceToNowStrict');
+const parseJSON = require('date-fns/parseJSON');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const todoUtils = require('./todo-utils');
@@ -21,10 +22,11 @@ const beginFlowMode = async function () {
     if (getSavedFlowMode() !== null) return;
     await config.warnAboutApiTokenAvailability();
     const apiTokenAvailable = await config.isApiTokenAvailable();
+    statusBarItem.text = "Flow Mode: Starting..."
+    context.globalState.update('startingFlowMode', true);
     if (!apiTokenAvailable && vscode.workspace.getConfiguration('makerflow').doNotAskForApiToken)  {
-        behaveAsInFlowMode();
+        behaveAsInFlowMode(null, true);
     } else if (apiTokenAvailable) {
-        statusBarItem.text = "Flow Mode: Starting..."
         exec("makerflow start --json --source=vscode", (error, stdout, stderr) => {
             if (error) {
                 console.error(error);
@@ -37,23 +39,25 @@ const beginFlowMode = async function () {
                 return;
             }
             if (cliRespondedWithApiTokenUnavailable(stdout)) {
-                behaveAsInFlowMode(null);
+                behaveAsInFlowMode(null, true);
             } else {
                 const response = JSON.parse(sanitizeCliOutput(stdout, true));
-                behaveAsInFlowMode(response.data);
+                behaveAsInFlowMode(response.data, false);
             }
         });
     }
+    context.globalState.update('startingFlowMode', false);
 }
 
 const endFlowMode = async function() {
     if (getSavedFlowMode() === null) return;
     await config.warnAboutApiTokenAvailability();
     const apiTokenAvailable = await config.isApiTokenAvailable();
+    statusBarItem.text = "Flow Mode: Stopping..."
+    context.globalState.update('stoppingFlowMode', true);
     if (!apiTokenAvailable && vscode.workspace.getConfiguration('makerflow').doNotAskForApiToken) {
-        behaveAsNOTInFlowMode();
+        behaveAsNOTInFlowMode(true);
     } else if (apiTokenAvailable) {
-        statusBarItem.text = "Flow Mode: Stopping..."
         const {error, stderr} = await exec("makerflow stop --json --source=vscode")
         if (error) {
             console.error(error);
@@ -63,8 +67,9 @@ const endFlowMode = async function() {
             console.log(`stderr: ${stderr}`);
             return;
         }
-        behaveAsNOTInFlowMode();
+        behaveAsNOTInFlowMode(false);
     }
+    context.globalState.update('stoppingFlowMode', false);
 }
 
 const getOngoingFlowMode = async function() {
@@ -89,15 +94,15 @@ const getOngoingFlowMode = async function() {
 
 const getAndProcessOngoingFlow = function() {
     getOngoingFlowMode().then(flowMode => {
-        if (typeof flowMode !== 'undefined' && flowMode !== null) {
-            if (getSavedFlowMode() !== null) {
+        if (typeof flowMode !== 'undefined' && flowMode !== null && Object.keys(flowMode).length > 0) {
+            if (getSavedFlowMode() !== null && !(context.globalState.get('startingFlowMode') || context.globalState.get('stoppingFlowMode'))) {
                 updateElapsedTimeOnStatusBar();
                 return;
             }
-            behaveAsInFlowMode(flowMode);
+            behaveAsInFlowMode(flowMode, true);
         } else {
             if (getSavedFlowMode() === null) return;
-            behaveAsNOTInFlowMode();
+            behaveAsNOTInFlowMode(true);
         }
     })
 }
@@ -124,7 +129,7 @@ const getOngoingBreakMode = async function() {
 
 const getAndProcessOngoingBreak = function() {
     getOngoingBreakMode().then(breakMode => {
-        if (typeof breakMode !== 'undefined' && breakMode !== null) {
+        if (typeof breakMode !== 'undefined' && breakMode !== null && Object.keys(breakMode).length > 0) {
             if (getSavedBreakMode() !== null) {
                 updateElapsedTimeOnStatusBar();
                 return;
@@ -469,7 +474,10 @@ function getSavedBreakMode() {
     return context.globalState.get('ongoingBreakMode', null);
 }
 
-function behaveAsNOTInFlowMode() {
+function behaveAsNOTInFlowMode(clientOnly) {
+    if (clientOnly && !context.globalState.get('startingFlowMode')) {
+        exec("makerflow stop --client-only --json --source=vscode");
+    }
     showFlowModeEndedNotification();
     context.globalState.update('ongoingFlowMode', null);
     statusBarItem.text = "Flow Mode: Off";
@@ -482,7 +490,10 @@ function behaveAsNOTInBreakMode() {
     }
 }
 
-function behaveAsInFlowMode(flowMode) {
+function behaveAsInFlowMode(flowMode, clientOnly) {
+    if (clientOnly && !context.globalState.get('stoppingFlowMode')) {
+        exec("makerflow start --client-only --json --source=vscode");
+    }
     showFlowModeStartedNotification();
     if (typeof flowMode === "undefined" || flowMode === null) {
         flowMode = {
@@ -505,5 +516,5 @@ function behaveAsInBreakMode(breakMode) {
 }
 
 function getElapsedTime(flowMode) {
-    return formatDistanceToNowStrict(utcToZonedTime(flowMode.start, timeZone));
+    return formatDistanceToNowStrict(utcToZonedTime(parseJSON(flowMode.start), timeZone));
 }
