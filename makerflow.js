@@ -41,8 +41,14 @@ const beginFlowMode = async function () {
             if (cliRespondedWithApiTokenUnavailable(stdout)) {
                 behaveAsInFlowMode(null, true);
             } else {
-                const response = JSON.parse(sanitizeCliOutput(stdout, true));
-                behaveAsInFlowMode(response.data, false);
+                try {
+                    const response = JSON.parse(sanitizeCliOutput(stdout, true));
+                    behaveAsInFlowMode(response.data, false);
+                } catch (e) {
+                    console.error(`error behaving in flow mode for stdout ${stdout}`)
+                    console.error(e)
+                }
+
             }
         });
     }
@@ -87,9 +93,14 @@ const getOngoingFlowMode = async function() {
     if (cliRespondedWithApiTokenUnavailable(stdout)) {
         return null
     }
-    const newLocal = sanitizeCliOutput(stdout, true);
-    const response = JSON.parse(newLocal);
-    return response != null && response.hasOwnProperty("data") ? response.data : null
+    try {
+        const newLocal = sanitizeCliOutput(stdout, true);
+        const response = JSON.parse(newLocal);
+        return response != null && response.hasOwnProperty("data") ? response.data : null
+    } catch (e) {
+        console.error(`error when fetching ongoingFlowMode for stdout ${stdout}`)
+        console.error(e);
+    }
 }
 
 const getAndProcessOngoingFlow = function() {
@@ -119,11 +130,17 @@ const getOngoingBreakMode = async function() {
         console.log(`stderr: ${stderr}`);
         return null;
     }
-    if (cliRespondedWithApiTokenUnavailable(stdout)) {
-        return null
+    let response = null
+    try {
+        if (cliRespondedWithApiTokenUnavailable(stdout)) {
+            return null
+        }
+        const newLocal = sanitizeCliOutput(stdout, true);
+        response = JSON.parse(newLocal);
+    } catch (e) {
+        console.error(`error on getOngoingBreakMode for stdout: ${stdout}`)
+        console.error(e)
     }
-    const newLocal = sanitizeCliOutput(stdout, true);
-    const response = JSON.parse(newLocal);
     return response != null && response ? response : null
 }
 
@@ -410,11 +427,7 @@ const recordProductiveActivity = async function(min, max) {
         return;
     }
     if (stderr) {
-        console.log(`stderr: ${stderr}`);
-        return;
-    }
-    if (stdout) {
-        console.log(`stdout: ${stdout}`);
+        console.error(`stderr: ${stderr}`);
         return;
     }
 }
