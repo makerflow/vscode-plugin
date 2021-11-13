@@ -464,15 +464,13 @@ module.exports = {
  */
 function sanitizeCliOutput(stdout, expectJson) {
     const newLocal = stdout.replaceAll('[0m', '');
-    let newLocal_1 = newLocal.trim();
-    if (stdout.length === 0) return stdout
-    if (expectJson && !(newLocal_1.charAt(0) === '{' || newLocal_1.charAt(0) === '[')) {
-        newLocal_1 = newLocal_1.substring(1)
+    if (stdout.length === 0 ) return stdout
+    let trimmedOutput = newLocal.trim();
+    if (trimmedOutput === "null") return trimmedOutput;
+    if (expectJson && !(trimmedOutput.charAt(0) === '{' || trimmedOutput.charAt(0) === '[')) {
+        trimmedOutput = trimmedOutput.substring(1)
     }
-    if (expectJson && stdout.length > 0 && !(newLocal_1.charAt(newLocal_1.length - 1) === '{' || newLocal_1.charAt(newLocal_1.length - 1) === '[')) {
-        newLocal_1 = newLocal_1.substring(0, newLocal_1.length - 1)
-    }
-    return newLocal_1;
+    return trimmedOutput;
 }
 
 function cliRespondedWithApiTokenUnavailable(stdout) {
