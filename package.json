@@ -3,7 +3,7 @@
 	"displayName": "Makerflow",
 	"publisher": "makerflow",
 	"description": "Makerflow is deep work and collaboration assistant for developers. Signup for your FREE account at https://makerflow.co",
-	"version": "0.0.6",
+	"version": "0.1.0",
 	"preview": true,
 	"repository": {
 		"type": "git",
