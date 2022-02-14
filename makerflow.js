@@ -421,7 +421,7 @@ const markAsDone = async function(todo) {
 const recordProductiveActivity = async function(min, max) {
     const apiTokenAvailable = await config.isApiTokenAvailable();
     if (!apiTokenAvailable) return;
-    const { error, stdout, stderr } = await exec(`makerflow productive-activity --min=${min} --max=${max}`)
+    const { error, stderr } = await exec(`makerflow productive-activity --min=${min} --max=${max}`)
     if (error) {
         console.error(error);
         return;
