@@ -26,9 +26,7 @@ hiding away from your product manager, designer or other developers on the team!
    1. or, when you are on a [break](#breaks). Status is set to one of these emojis ☕️ 🍵 🥪 🥤 🚶 🏃 💪 🏥 👶 ⏸
 
 #### Plus, other commands and status bar items to
-1. 📋 Get a list of your [tasks](#tasks) like
-   1. Slack notifications
-   1. pull requests from GitHub or Bitbucket
+1. 📋 Get a list of your [tasks](#tasks) like pull requests from GitHub or Bitbucket
 1. ✅ and mark them as done
 1. 📅 See all your ongoing and upcoming [events from Google Calendar](#events-from-google-calendar)
    1. and launch Google Meet meetings directly from VS Code 🎥 🚀
